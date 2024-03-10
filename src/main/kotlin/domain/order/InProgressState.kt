@@ -28,11 +28,11 @@ class InProgressState(
         } ?: OutputModel("Order with id $id does not exist")
     }
 
-    override fun addMeal(id: Int, mealId: Int): OutputModel {
+    override fun addMeal(id: Int, mealId: Int, amount: Int): OutputModel {
         return OutputModel("You can't add a meal to the order that is being prepared")
     }
 
-    override fun removeMeal(id: Int, mealId: Int): OutputModel {
+    override fun removeMeal(id: Int, mealId: Int, amount: Int): OutputModel {
         return OutputModel("You can't remove a meal from the order that is being prepared")
     }
 

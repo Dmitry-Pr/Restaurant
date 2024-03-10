@@ -6,8 +6,8 @@ abstract class State(
     protected val orderController: OrderController
 ) {
     abstract fun getOrder(id: Int): OutputModel
-    abstract fun addMeal(id: Int, mealId: Int): OutputModel
-    abstract fun removeMeal(id: Int, mealId: Int): OutputModel
+    abstract fun addMeal(id: Int, mealId: Int, amount: Int): OutputModel
+    abstract fun removeMeal(id: Int, mealId: Int, amount: Int): OutputModel
     abstract fun getDuration(id: Int): OutputModel
     abstract fun removeOrder(id: Int): OutputModel
     abstract fun isPaid(id: Int): Boolean

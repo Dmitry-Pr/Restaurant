@@ -17,11 +17,11 @@ class PaidState(
         } ?: OutputModel("Order with id $id does not exist")
     }
 
-    override fun addMeal(id: Int, mealId: Int): OutputModel {
+    override fun addMeal(id: Int, mealId: Int, amount: Int): OutputModel {
         return OutputModel("You can't add a meal to the paid order")
     }
 
-    override fun removeMeal(id: Int, mealId: Int): OutputModel {
+    override fun removeMeal(id: Int, mealId: Int, amount: Int): OutputModel {
         return OutputModel("You can't remove a meal from the paid order")
     }
 

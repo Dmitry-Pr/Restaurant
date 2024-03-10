@@ -19,12 +19,12 @@ class CreatedState(
         } ?: OutputModel("Order with id $id does not exist")
     }
 
-    override fun addMeal(id: Int, mealId: Int): OutputModel {
-        return orderController.addMealById(id, mealId)
+    override fun addMeal(id: Int, mealId: Int, amount: Int): OutputModel {
+        return orderController.addMealById(id, mealId, amount)
     }
 
-    override fun removeMeal(id: Int, mealId: Int): OutputModel {
-        return orderController.removeMealById(id, mealId)
+    override fun removeMeal(id: Int, mealId: Int, amount: Int): OutputModel {
+        return orderController.removeMealById(id, mealId, amount)
     }
 
     override fun getDuration(id: Int): OutputModel {

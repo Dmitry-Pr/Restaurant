@@ -26,10 +26,10 @@ interface OrderController {
     fun getOrder(id: Int): OutputModel
     fun getOrderById(id: Int): OrderEntity?
 
-    fun addMeal(id: Int, mealId: Int): OutputModel
-    fun addMealById(id: Int, mealId: Int): OutputModel
-    fun removeMeal(id: Int, mealId: Int): OutputModel
-    fun removeMealById(id: Int, mealId: Int): OutputModel
+    fun addMeal(id: Int, mealId: Int, amount: Int): OutputModel
+    fun addMealById(id: Int, mealId: Int, amount: Int): OutputModel
+    fun removeMeal(id: Int, mealId: Int, amount: Int): OutputModel
+    fun removeMealById(id: Int, mealId: Int, amount: Int): OutputModel
     fun getDuration(id: Int): OutputModel
     fun removeOrder(id: Int): OutputModel
     fun removeOrderById(id: Int): OutputModel
@@ -49,7 +49,7 @@ class OrderControllerImpl(
     private val mealDao: MealDao,
     private val mealController: MealController
 
-    ) : OrderController {
+) : OrderController {
     private var state: State = CreatedState(this)
 
     override fun addOrder(meals: MutableMap<Int, Int>): OutputModel {
@@ -65,13 +65,10 @@ class OrderControllerImpl(
         if (orderMeals.isEmpty()) {
             return OutputModel("$answer\nCan not create order without meals")
         }
-//        val mealsMap = mutableMapOf<Int, Int>()
-//        for (meal in orderMeals) {
-//            mealsMap[meal.id] = meals[meal.id]!!
-//        }
+        val mealsMap = orderMeals.associate { it.id to it.amount }.toMutableMap()
         orderDao.add(
             duration = orderMeals.sumOf { it.duration.inWholeMinutes }.toDuration(DurationUnit.MINUTES),
-            meals = orderMeals.map { (it.id, it.amount) }
+            meals = mealsMap,
             totalPrice = orderMeals.sumOf { it.price },
             state = OrderState.Created,
             startedOn = null
@@ -87,8 +84,8 @@ class OrderControllerImpl(
         return orderDao.get(id)
     }
 
-    override fun addMeal(id: Int, mealId: Int): OutputModel {
-        return state.addMeal(id, mealId)
+    override fun addMeal(id: Int, mealId: Int, amount: Int): OutputModel {
+        return state.addMeal(id, mealId, amount)
     }
 
     override fun addMealById(id: Int, mealId: Int, amount: Int): OutputModel {
@@ -113,22 +110,33 @@ class OrderControllerImpl(
         return OutputModel("Meal added to the order" + serialize().message)
     }
 
-    override fun removeMeal(id: Int, mealId: Int): OutputModel {
-        return state.removeMeal(id, mealId)
+    override fun removeMeal(id: Int, mealId: Int, amount: Int): OutputModel {
+        return state.removeMeal(id, mealId, amount)
     }
 
-    override fun removeMealById(id: Int, mealId: Int): OutputModel {
+    override fun removeMealById(id: Int, mealId: Int, amount: Int): OutputModel {
         val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
         val meal = mealDao.get(mealId) ?: return OutputModel("Meal with id $mealId does not exist")
         if (!orderDao.get(id)!!.meals.contains(mealId)) {
             return OutputModel("The meal with id $mealId is not in the order with id $id")
         }
-        val meals = (order.meals - mealId).toMutableList()
+        if (order.meals[mealId]!! < amount) {
+            return OutputModel("The order with id $id does not contain $amount ${meal.name}")
+        }
+        mealController.changeAmount(mealId, meal.amount + amount)
+        val meals = order.meals
+        if (meals.contains(mealId)) {
+            meals[mealId] = meals[mealId]!! - amount
+        }
+        if (meals[mealId] == 0) {
+            meals.remove(mealId)
+        }
         val newOrder = order.copy(
             meals = meals,
             totalPrice = order.totalPrice - meal.price,
             duration = order.duration - meal.duration
         )
+        orderDao.update(newOrder)
         return OutputModel("Meal removed from the order" + serialize().message)
     }
 

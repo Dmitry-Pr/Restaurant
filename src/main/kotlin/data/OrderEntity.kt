@@ -14,6 +14,6 @@ data class OrderEntity(
     val duration: Duration,
     val meals: MutableList<Int>,
     val totalPrice: Int,
-    val startedOn: LocalDateTime,
+    val startedOn: LocalDateTime?,
     val state: OrderState
 )

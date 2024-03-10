@@ -77,9 +77,9 @@ class UserControllerImpl(
             file.writeText(jsonString)
             Success(OutputModel("Successfully saved users data"))
         } catch (ex: FileNotFoundException) {
-            Error(OutputModel("The changes are not saved, saving file is not found"))
+            Error(OutputModel("The changes are not saved, users file is not found"))
         } catch (ex: Exception) {
-            Error(OutputModel("The changes are not saved, unpredicted problem with saving file"))
+            Error(OutputModel("The changes are not saved, unpredicted problem with saving users file"))
         }
     }
 

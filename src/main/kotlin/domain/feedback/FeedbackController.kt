@@ -92,9 +92,9 @@ class FeedbackControllerImpl(
             file.writeText(jsonString)
             OutputModel("Successfully saved feedback data")
         } catch (ex: FileNotFoundException) {
-            OutputModel("\nThe changes are not saved, saving file is not found")
+            OutputModel("\nThe changes are not saved, feedback file is not found")
         } catch (ex: Exception) {
-            OutputModel("\nThe changes are not saved, unpredicted problem with saving file")
+            OutputModel("\nThe changes are not saved, unpredicted problem with saving feedback file")
         }
     }
 }

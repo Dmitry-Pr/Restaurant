@@ -1,7 +1,8 @@
-package org.example.data.builders
+package data.builders
 
-import org.example.data.Role
-import org.example.data.UserEntity
+import data.Role
+import data.UserEntity
+import data.builders.UserBuilder
 
 class UserBuilderImpl : UserBuilder {
     var id: Int = 0
@@ -11,7 +12,7 @@ class UserBuilderImpl : UserBuilder {
     var password: String = ""
     var role: Role = Role.User
     override fun setId(id: Int) {
-        this.id = id;
+        this.id = id
     }
 
     override fun setName(name: String) {

@@ -1,6 +1,5 @@
 package data
 
-import org.example.data.MealEntity
 import kotlin.time.Duration
 
 

@@ -1,7 +1,7 @@
-package org.example.data.builders
+package data.builders
 
-import org.example.data.Role
-import org.example.data.UserEntity
+import data.Role
+import data.UserEntity
 
 interface UserBuilder {
     fun setId(id: Int)

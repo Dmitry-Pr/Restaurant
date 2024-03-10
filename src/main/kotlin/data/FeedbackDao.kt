@@ -1,10 +1,7 @@
 package data
 
-import org.example.data.FeedbackEntity
-import kotlin.time.Duration
 
-
-interface FeedBackDao {
+interface FeedbackDao {
     fun add(mealId: Int, userId: Int, rating: Int, comment: String)
     fun getAll(): List<FeedbackEntity>
     fun get(id: Int): FeedbackEntity?
@@ -12,7 +9,7 @@ interface FeedBackDao {
     fun load(feedback: List<FeedbackEntity>)
 }
 
-class RuntimeFeedbackDao : FeedBackDao {
+class RuntimeFeedbackDao : FeedbackDao {
     private val feedback = mutableMapOf<Int, FeedbackEntity>()
     private var counter = 0
     override fun add(mealId: Int, userId: Int, rating: Int, comment: String) {

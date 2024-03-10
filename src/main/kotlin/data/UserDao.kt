@@ -1,9 +1,6 @@
 package data
 
-import org.example.data.Role
-import org.example.data.UserEntity
-import org.example.data.builders.UserBuilder
-import org.example.data.builders.UserBuilderImpl
+import data.builders.UserBuilderImpl
 
 interface UserDao {
     fun add(name: String, surname: String, login: String, password: String, role: Role)

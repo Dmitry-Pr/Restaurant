@@ -2,6 +2,10 @@ package org.example.data
 
 import kotlinx.serialization.Serializable
 
+enum class Role {
+    User, Admin
+}
+
 @Serializable
 data class UserEntity(
     val id: Int,
@@ -9,5 +13,5 @@ data class UserEntity(
     val surname: String,
     val login: String,
     val password: String,
-    val role: String,
+    val role: Role,
 )

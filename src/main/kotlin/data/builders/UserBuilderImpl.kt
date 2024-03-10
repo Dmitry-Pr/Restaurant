@@ -1,40 +1,41 @@
-//package org.example.data.builders
-//
-//import org.example.data.Role
-//
-//class UserBuilderImpl : UserBuilder{
-//    val id: Int;
-//    val name: String;
-//    val surname: String;
-//    val login: String;
-//    val password: String;
-//    val role: Role;
-//    override fun setId(id: Int) {
-//
-//    }
-//
-//    override fun setName(name: String) {
-//        TODO("Not yet implemented")
-//    }
-//
-//    override fun setSurname(surname: String) {
-//        TODO("Not yet implemented")
-//    }
-//
-//    override fun setLogin(login: String) {
-//        TODO("Not yet implemented")
-//    }
-//
-//    override fun setPassword(password: String) {
-//        TODO("Not yet implemented")
-//    }
-//
-//    override fun setRole(role: Role) {
-//        TODO("Not yet implemented")
-//    }
-//
-//    override fun getResult() {
-//        TODO("Not yet implemented")
-//    }
-//
-//}
+package org.example.data.builders
+
+import org.example.data.Role
+import org.example.data.UserEntity
+
+class UserBuilderImpl : UserBuilder {
+    var id: Int = 0
+    var name: String = ""
+    var surname: String = ""
+    var login: String = ""
+    var password: String = ""
+    var role: Role = Role.User
+    override fun setId(id: Int) {
+        this.id = id;
+    }
+
+    override fun setName(name: String) {
+        this.name = name
+    }
+
+    override fun setSurname(surname: String) {
+        this.surname = surname
+    }
+
+    override fun setLogin(login: String) {
+        this.login = login
+    }
+
+    override fun setPassword(password: String) {
+        this.password = password
+    }
+
+    override fun setRole(role: Role) {
+        this.role = role
+    }
+
+    override fun getResult(): UserEntity {
+        return UserEntity(id, name, surname, login, password, role)
+    }
+
+}

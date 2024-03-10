@@ -2,6 +2,8 @@ package data
 
 import org.example.data.Role
 import org.example.data.UserEntity
+import org.example.data.builders.UserBuilder
+import org.example.data.builders.UserBuilderImpl
 
 interface UserDao {
     fun add(name: String, surname: String, login: String, password: String, role: Role)
@@ -14,14 +16,14 @@ class RuntimeUserDao : UserDao {
     private val users = mutableMapOf<String, UserEntity>()
     private var counter = 0
     override fun add(name: String, surname: String, login: String, password: String, role: Role) {
-        val user = UserEntity(
-            id = counter,
-            name = name,
-            surname = surname,
-            login = login,
-            password = password,
-            role = role,
-        )
+        val builder = UserBuilderImpl()
+        builder.setId(counter)
+        builder.setName(name)
+        builder.setSurname(surname)
+        builder.setLogin(login)
+        builder.setPassword(password)
+        builder.setRole(role)
+        val user = builder.getResult()
         users[login] = user
         counter++
     }

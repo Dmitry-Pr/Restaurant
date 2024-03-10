@@ -1,6 +1,7 @@
 package org.example.data.builders
 
 import org.example.data.Role
+import org.example.data.UserEntity
 
 interface UserBuilder {
     fun setId(id: Int)
@@ -9,5 +10,5 @@ interface UserBuilder {
     fun setLogin(login: String)
     fun setPassword(password: String)
     fun setRole(role: Role)
-    fun getResult()
+    fun getResult(): UserEntity
 }

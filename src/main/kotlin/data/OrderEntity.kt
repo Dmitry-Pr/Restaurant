@@ -12,7 +12,7 @@ enum class OrderState {
 data class OrderEntity(
     val id: Int,
     val duration: Duration,
-    val meals: MutableList<Int>,
+    val meals: MutableMap<Int, Int>,
     val totalPrice: Int,
     val startedOn: LocalDateTime?,
     val state: OrderState

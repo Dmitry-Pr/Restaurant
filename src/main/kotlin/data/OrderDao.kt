@@ -5,7 +5,7 @@ import kotlin.time.Duration
 
 
 interface OrderDao {
-    fun add(duration: Duration, meals: MutableList<Int>, totalPrice: Int, startedOn: LocalDateTime?, state: OrderState)
+    fun add(duration: Duration, meals: MutableMap<Int, Int>, totalPrice: Int, startedOn: LocalDateTime?, state: OrderState)
     fun getAll(): List<OrderEntity>
     fun get(id: Int): OrderEntity?
     fun remove(id: Int)
@@ -18,7 +18,7 @@ class RuntimeOrderDao : OrderDao {
     private var counter = 0
     override fun add(
         duration: Duration,
-        meals: MutableList<Int>,
+        meals: MutableMap<Int, Int>,
         totalPrice: Int,
         startedOn: LocalDateTime?,
         state: OrderState

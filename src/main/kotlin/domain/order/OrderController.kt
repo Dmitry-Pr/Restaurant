@@ -5,6 +5,7 @@ import domain.Error
 import domain.Result
 import domain.Success
 import domain.meal.MEALS_JSON_PATH
+import domain.meal.MealController
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
 import kotlinx.serialization.encodeToString
@@ -21,7 +22,7 @@ import kotlin.time.toDuration
 const val ORDERS_JSON_PATH = "data/orders.json"
 
 interface OrderController {
-    fun addOrder(meals: MutableList<Int>): OutputModel
+    fun addOrder(meals: MutableMap<Int, Int>): OutputModel
     fun getOrder(id: Int): OutputModel
     fun getOrderById(id: Int): OrderEntity?
 
@@ -46,26 +47,31 @@ interface OrderController {
 class OrderControllerImpl(
     private val orderDao: OrderDao,
     private val mealDao: MealDao,
+    private val mealController: MealController
 
     ) : OrderController {
     private var state: State = CreatedState(this)
 
-    override fun addOrder(meals: MutableList<Int>): OutputModel {
+    override fun addOrder(meals: MutableMap<Int, Int>): OutputModel {
         var answer = ""
         val orderMeals = mutableListOf<MealEntity>()
         for (meal in meals) {
-            if (mealDao.get(meal) == null) {
-                answer += "Meal with id $meal does not exist\n"
+            if (mealDao.get(meal.key) == null) {
+                answer += "Meal with id ${meal.key} does not exist\n"
             } else {
-                orderMeals.add(mealDao.get(meal)!!)
+                orderMeals.add(mealDao.get(meal.key)!!)
             }
         }
         if (orderMeals.isEmpty()) {
             return OutputModel("$answer\nCan not create order without meals")
         }
+//        val mealsMap = mutableMapOf<Int, Int>()
+//        for (meal in orderMeals) {
+//            mealsMap[meal.id] = meals[meal.id]!!
+//        }
         orderDao.add(
             duration = orderMeals.sumOf { it.duration.inWholeMinutes }.toDuration(DurationUnit.MINUTES),
-            meals = orderMeals.map { it.id }.toMutableList(),
+            meals = orderMeals.map { (it.id, it.amount) }
             totalPrice = orderMeals.sumOf { it.price },
             state = OrderState.Created,
             startedOn = null
@@ -85,10 +91,19 @@ class OrderControllerImpl(
         return state.addMeal(id, mealId)
     }
 
-    override fun addMealById(id: Int, mealId: Int): OutputModel {
+    override fun addMealById(id: Int, mealId: Int, amount: Int): OutputModel {
         val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
         val meal = mealDao.get(mealId) ?: return OutputModel("Meal with id $mealId does not exist")
-        val meals = (order.meals + mealId).toMutableList()
+        if (meal.amount < amount) {
+            return OutputModel("It is only ${meal.amount} ${meal.name} left in the storage")
+        }
+        mealController.changeAmount(mealId, meal.amount - amount)
+        val meals = order.meals
+        if (meals.contains(mealId)) {
+            meals[mealId] = meals[mealId]!! + amount
+        } else {
+            meals[mealId] = amount
+        }
         val newOrder = order.copy(
             meals = meals,
             totalPrice = order.totalPrice + meal.price,

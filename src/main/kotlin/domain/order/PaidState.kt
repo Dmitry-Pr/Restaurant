@@ -45,6 +45,10 @@ class PaidState(
         return OutputModel("The order with id $id is already prepared")
     }
 
+    override fun stopCooking(id: Int): OutputModel {
+        return OutputModel("The order with id $id is already prepared")
+    }
+
     override fun isReady(id: Int): Boolean {
         return true
     }

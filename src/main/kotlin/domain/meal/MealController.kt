@@ -19,6 +19,8 @@ interface MealController {
     fun changeName(id: Int, name: String): OutputModel
     fun changePrice(id: Int, price: Int): OutputModel
     fun changeAmount(id: Int, amount: Int): OutputModel
+    fun decreaseAmount(id: Int, amount: Int): OutputModel
+    fun increaseAmount(id: Int, amount: Int): OutputModel
     fun changeDuration(id: Int, duration: String): OutputModel
     fun getAllMeals(): OutputModel
     fun deserialize(): Result
@@ -82,6 +84,24 @@ class MealControllerImpl(
 
             is Error -> result.outputModel
         }
+    }
+
+    override fun decreaseAmount(id: Int, amount: Int): OutputModel {
+        val meal = mealDao.get(id) ?: return OutputModel("Incorrect meal id")
+        val newAmount = meal.amount - amount
+        return when (val result = mealValidator.validateAmount(newAmount)) {
+            is Success -> {
+                val updatedMeal = meal.copy(amount = newAmount)
+                mealDao.update(updatedMeal)
+                OutputModel("Changed amount of the meal" + serialize().message)
+            }
+
+            is Error -> result.outputModel
+        }
+    }
+
+    override fun increaseAmount(id: Int, amount: Int): OutputModel {
+        return decreaseAmount(id, -amount)
     }
 
     override fun changeDuration(id: Int, duration: String): OutputModel {

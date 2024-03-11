@@ -56,6 +56,10 @@ class CreatedState(
         return OutputModel("The order with id $id is being prepared")
     }
 
+    override fun stopCooking(id: Int): OutputModel {
+        return OutputModel("The order with id $id is not being prepared")
+    }
+
     override fun isReady(id: Int): Boolean {
         return false
     }

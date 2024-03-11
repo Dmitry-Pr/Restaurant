@@ -249,6 +249,10 @@ class CommandsHandlerImpl(
         return orderController.startCooking(id)
     }
 
+    override fun stopCooking(): OutputModel {
+        TODO("Not yet implemented")
+    }
+
     override fun getAllOrders(): OutputModel {
         return orderController.getAllOrders()
     }

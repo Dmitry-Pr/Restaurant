@@ -13,6 +13,7 @@ abstract class State(
     abstract fun isPaid(id: Int): Boolean
     abstract fun pay(id: Int): OutputModel
     abstract fun startCooking(id: Int): OutputModel
+    abstract fun stopCooking(id: Int): OutputModel
     abstract fun isReady(id: Int): Boolean
     abstract fun isCooking(id: Int): Boolean
 }

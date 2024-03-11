@@ -4,7 +4,6 @@ import data.*
 import domain.Error
 import domain.Result
 import domain.Success
-import domain.meal.MEALS_JSON_PATH
 import domain.meal.MealController
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
@@ -15,10 +14,11 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.lang.Exception
 import java.lang.Thread.sleep
-import java.time.Clock
-import java.util.Calendar
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 const val ORDERS_JSON_PATH = "data/orders.json"
 
@@ -37,12 +37,14 @@ interface OrderController {
     fun isPaid(id: Int): Boolean
     fun pay(id: Int): OutputModel
     fun startCooking(id: Int): OutputModel
+    fun stopCooking(id: Int): OutputModel
     fun isReady(id: Int): Boolean
     fun isCooking(id: Int): Boolean
     fun getAllOrders(): OutputModel
     fun changeState(state: State)
-    fun setTimeStart(id: Int, time: LocalDateTime)
+    fun setTimeStart(id: Int, time: LocalDateTime?)
     fun prepare(id: Int)
+    fun stopJob(id: Int)
     fun deserialize(): Result
 }
 
@@ -109,7 +111,6 @@ class OrderControllerImpl(
         if (meal.amount < amount) {
             return OutputModel("It is only ${meal.amount} ${meal.name} left in the storage")
         }
-        mealController.changeAmount(mealId, meal.amount - amount)
         val meals = order.meals
         if (meals.contains(mealId)) {
             meals[mealId] = meals[mealId]!! + amount
@@ -141,7 +142,6 @@ class OrderControllerImpl(
         if (order.meals[mealId]!! < amount) {
             return OutputModel("The order with id $id does not contain $amount ${meal.name}")
         }
-        mealController.changeAmount(mealId, meal.amount + amount)
         val meals = order.meals
         if (meals.contains(mealId)) {
             meals[mealId] = meals[mealId]!! - amount
@@ -195,6 +195,14 @@ class OrderControllerImpl(
         return state.startCooking(id)
     }
 
+    override fun stopCooking(id: Int): OutputModel {
+        val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
+        if (order.userId != session.currentUserId) {
+            return OutputModel("You can not stop cooking another user order")
+        }
+        return state.stopCooking(id)
+    }
+
     override fun isReady(id: Int): Boolean {
         return state.isReady(id)
     }
@@ -212,7 +220,7 @@ class OrderControllerImpl(
         this.state = state
     }
 
-    override fun setTimeStart(id: Int, time: LocalDateTime) {
+    override fun setTimeStart(id: Int, time: LocalDateTime?) {
         val order = orderDao.get(id) ?: return
         val newOrder = order.copy(startedOn = java.time.LocalDateTime.now().toKotlinLocalDateTime())
         orderDao.update(newOrder)
@@ -221,8 +229,23 @@ class OrderControllerImpl(
 
     override fun prepare(id: Int) {
         val order = orderDao.get(id)!!
-        sleep(order.duration.inWholeMilliseconds)
-        changeState(ReadyState(this))
+        for(meal in order.meals) {
+            mealController.decreaseAmount(meal.key, meal.value)
+        }
+        val obj = this
+        val job = CoroutineScope(Dispatchers.Default).launch {
+            sleep(order.duration.inWholeMilliseconds)
+            changeState(ReadyState(obj))
+        }
+        Jobs.addJob(id, job)
+    }
+
+    override fun stopJob(id: Int) {
+        Jobs.stopJob(id)
+        val order = orderDao.get(id)!!
+        for(meal in order.meals) {
+            mealController.increaseAmount(meal.key, meal.value)
+        }
     }
 
     override fun deserialize(): Result {

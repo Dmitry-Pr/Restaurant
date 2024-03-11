@@ -65,6 +65,14 @@ class InProgressState(
         return OutputModel("The order with id $id is already being prepared")
     }
 
+    override fun stopCooking(id: Int): OutputModel {
+        val order = orderController.getOrderById(id) ?: return OutputModel("Order with id $id does not exist")
+        orderController.setTimeStart(id, null)
+        orderController.stopJob(id)
+        orderController.changeState(CreatedState(orderController))
+        return OutputModel("The order with id $id is not being prepared anymore")
+    }
+
     override fun isReady(id: Int): Boolean {
         return false
     }

@@ -12,5 +12,6 @@ interface OrderCommandsHandler {
     fun getOrderDuration(): OutputModel
     fun payForOrder(): OutputModel
     fun startCooking(): OutputModel
+    fun stopCooking(): OutputModel
     fun getAllOrders(): OutputModel
 }

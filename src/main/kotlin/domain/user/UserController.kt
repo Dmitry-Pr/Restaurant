@@ -1,6 +1,7 @@
 package domain.user
 
 import data.Role
+import data.Session
 import data.UserDao
 import data.UserEntity
 import domain.Error
@@ -25,7 +26,8 @@ interface UserController {
 class UserControllerImpl(
     private val userDao: UserDao,
     private val loginValidator: UserValidator,
-    private val registrationValidator: UserValidator
+    private val registrationValidator: UserValidator,
+    private val session: Session,
 ) : UserController {
     override fun addUser(name: String, surname: String, login: String, password: String, role: Role): Result {
         val checkResult = registrationValidator.check(login, password, name, surname)
@@ -39,6 +41,7 @@ class UserControllerImpl(
                     password = BCrypt.hashpw(password, BCrypt.gensalt()),
                     role = role
                 )
+                session.currentUserId = userDao.get(login)!!.id
                 when (val res = serialize()) {
                     is Success -> Success(OutputModel("Successfully added user"))
                     is Error -> res
@@ -52,7 +55,10 @@ class UserControllerImpl(
         val checkResult = loginValidator.check(login, password, "", "")
         return when {
             checkResult is Error -> checkResult
-            else -> Success(OutputModel("Successfully logged in"))
+            else -> {
+                session.currentUserId = userDao.get(login)!!.id
+                Success(OutputModel("Successfully logged in"))
+            }
         }
     }
 

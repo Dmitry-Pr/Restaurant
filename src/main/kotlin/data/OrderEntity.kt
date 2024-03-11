@@ -11,6 +11,7 @@ enum class OrderState {
 @Serializable
 data class OrderEntity(
     val id: Int,
+    val userId: Int,
     val duration: Duration,
     val meals: MutableMap<Int, Int>,
     val totalPrice: Int,

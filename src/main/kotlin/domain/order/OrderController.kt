@@ -14,6 +14,7 @@ import presentation.model.OutputModel
 import java.io.File
 import java.io.FileNotFoundException
 import java.lang.Exception
+import java.lang.Thread.sleep
 import java.time.Clock
 import java.util.Calendar
 import kotlin.time.DurationUnit
@@ -22,10 +23,10 @@ import kotlin.time.toDuration
 const val ORDERS_JSON_PATH = "data/orders.json"
 
 interface OrderController {
-    fun addOrder(meals: MutableMap<Int, Int>): OutputModel
+    fun addOrder(userId: Int, meals: MutableMap<Int, Int>): OutputModel
     fun getOrder(id: Int): OutputModel
     fun getOrderById(id: Int): OrderEntity?
-
+    fun getOrdersByUserId(userId: Int): OutputModel
     fun addMeal(id: Int, mealId: Int, amount: Int): OutputModel
     fun addMealById(id: Int, mealId: Int, amount: Int): OutputModel
     fun removeMeal(id: Int, mealId: Int, amount: Int): OutputModel
@@ -41,18 +42,20 @@ interface OrderController {
     fun getAllOrders(): OutputModel
     fun changeState(state: State)
     fun setTimeStart(id: Int, time: LocalDateTime)
+    fun prepare(id: Int)
     fun deserialize(): Result
 }
 
 class OrderControllerImpl(
     private val orderDao: OrderDao,
     private val mealDao: MealDao,
-    private val mealController: MealController
+    private val mealController: MealController,
+    private val session: Session
 
 ) : OrderController {
     private var state: State = CreatedState(this)
 
-    override fun addOrder(meals: MutableMap<Int, Int>): OutputModel {
+    override fun addOrder(userId: Int, meals: MutableMap<Int, Int>): OutputModel {
         var answer = ""
         val orderMeals = mutableListOf<MealEntity>()
         for (meal in meals) {
@@ -67,6 +70,7 @@ class OrderControllerImpl(
         }
         val mealsMap = orderMeals.associate { it.id to it.amount }.toMutableMap()
         orderDao.add(
+            userId = userId,
             duration = orderMeals.sumOf { it.duration.inWholeMinutes }.toDuration(DurationUnit.MINUTES),
             meals = mealsMap,
             totalPrice = orderMeals.sumOf { it.price },
@@ -81,7 +85,15 @@ class OrderControllerImpl(
     }
 
     override fun getOrderById(id: Int): OrderEntity? {
-        return orderDao.get(id)
+        return when (orderDao.get(id)) {
+            null -> null
+            else -> if (orderDao.get(id)!!.userId != session.currentUserId) null else orderDao.get(id)
+        }
+    }
+
+    override fun getOrdersByUserId(userId: Int): OutputModel {
+        val orders = orderDao.getAll().filter { it.userId == userId }.joinToString("\n")
+        return OutputModel(orders).takeIf { it.message.isNotEmpty() } ?: OutputModel("List of orders is empty")
     }
 
     override fun addMeal(id: Int, mealId: Int, amount: Int): OutputModel {
@@ -90,6 +102,9 @@ class OrderControllerImpl(
 
     override fun addMealById(id: Int, mealId: Int, amount: Int): OutputModel {
         val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
+        if (order.userId != session.currentUserId) {
+            return OutputModel("You can not add meal to another user order")
+        }
         val meal = mealDao.get(mealId) ?: return OutputModel("Meal with id $mealId does not exist")
         if (meal.amount < amount) {
             return OutputModel("It is only ${meal.amount} ${meal.name} left in the storage")
@@ -116,6 +131,9 @@ class OrderControllerImpl(
 
     override fun removeMealById(id: Int, mealId: Int, amount: Int): OutputModel {
         val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
+        if (order.userId != session.currentUserId) {
+            return OutputModel("You can not remove meal from another user order")
+        }
         val meal = mealDao.get(mealId) ?: return OutputModel("Meal with id $mealId does not exist")
         if (!orderDao.get(id)!!.meals.contains(mealId)) {
             return OutputModel("The meal with id $mealId is not in the order with id $id")
@@ -149,7 +167,10 @@ class OrderControllerImpl(
     }
 
     override fun removeOrderById(id: Int): OutputModel {
-        orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
+        val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
+        if (order.userId != session.currentUserId) {
+            return OutputModel("You can not remove another user order")
+        }
         orderDao.remove(id)
         return OutputModel("Order removed" + serialize().message)
     }
@@ -159,10 +180,18 @@ class OrderControllerImpl(
     }
 
     override fun pay(id: Int): OutputModel {
+        val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
+        if (order.userId != session.currentUserId) {
+            return OutputModel("You can not pay for another user order")
+        }
         return state.pay(id)
     }
 
     override fun startCooking(id: Int): OutputModel {
+        val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
+        if (order.userId != session.currentUserId) {
+            return OutputModel("You can not start cooking another user order")
+        }
         return state.startCooking(id)
     }
 
@@ -188,6 +217,12 @@ class OrderControllerImpl(
         val newOrder = order.copy(startedOn = java.time.LocalDateTime.now().toKotlinLocalDateTime())
         orderDao.update(newOrder)
 
+    }
+
+    override fun prepare(id: Int) {
+        val order = orderDao.get(id)!!
+        sleep(order.duration.inWholeMilliseconds)
+        changeState(ReadyState(this))
     }
 
     override fun deserialize(): Result {

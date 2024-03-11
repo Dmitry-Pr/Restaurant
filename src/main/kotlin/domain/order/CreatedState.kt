@@ -48,10 +48,11 @@ class CreatedState(
     override fun startCooking(id: Int): OutputModel {
         val order = orderController.getOrderById(id) ?: return OutputModel("Order with id $id does not exist")
         if (order.meals.isEmpty()) {
-            return OutputModel("The order with id $id does not contain any meals")
+            return OutputModel("The order with id $id does not contain any meal")
         }
         orderController.setTimeStart(id, java.time.LocalDateTime.now().toKotlinLocalDateTime())
         orderController.changeState(InProgressState(orderController))
+        orderController.prepare(id)
         return OutputModel("The order with id $id is being prepared")
     }
 

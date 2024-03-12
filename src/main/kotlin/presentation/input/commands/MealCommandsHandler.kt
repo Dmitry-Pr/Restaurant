@@ -1,4 +1,4 @@
-package presentation.input
+package presentation.input.commands
 
 import presentation.model.OutputModel
 

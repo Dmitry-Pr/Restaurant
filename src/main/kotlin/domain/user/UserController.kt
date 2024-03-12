@@ -42,6 +42,7 @@ class UserControllerImpl(
                     role = role
                 )
                 session.currentUserId = userDao.get(login)!!.id
+                session.currentUserRole = role
                 when (val res = serialize()) {
                     is Success -> Success(OutputModel("Successfully added user"))
                     is Error -> res
@@ -57,6 +58,7 @@ class UserControllerImpl(
             checkResult is Error -> checkResult
             else -> {
                 session.currentUserId = userDao.get(login)!!.id
+                session.currentUserRole = userDao.get(login)!!.role
                 Success(OutputModel("Successfully logged in"))
             }
         }

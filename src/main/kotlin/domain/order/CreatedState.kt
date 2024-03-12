@@ -53,7 +53,7 @@ class CreatedState(
             return OutputModel("The order with id $id does not contain any meal")
         }
         orderController.setTimeStart(id, java.time.LocalDateTime.now().toKotlinLocalDateTime())
-        orderController.changeState(InProgressState(orderController))
+        orderController.changeState(id, InProgressState(orderController))
         orderController.prepare(id)
         return OutputModel("The order with id $id is being prepared")
     }

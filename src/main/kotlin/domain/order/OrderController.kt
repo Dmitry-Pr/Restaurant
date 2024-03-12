@@ -24,6 +24,7 @@ import kotlin.time.toDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.time.Duration
 
 const val ORDERS_JSON_PATH = "data/orders.json"
 
@@ -46,7 +47,7 @@ interface OrderController {
     fun isReady(id: Int): Boolean
     fun isCooking(id: Int): Boolean
     fun getAllOrders(): OutputModel
-    fun changeState(state: State)
+    fun changeState(id: Int, state: State)
     fun setTimeStart(id: Int, time: LocalDateTime?)
     fun prepare(id: Int)
     fun stopJob(id: Int)
@@ -59,7 +60,6 @@ class OrderControllerImpl(
     private val mealController: MealController,
 ) : OrderController {
     private var state: State = CreatedState(this)
-
     override fun addOrder(userId: Int, meals: MutableMap<Int, Int>): OutputModel {
         var answer = ""
         val orderMeals = mutableListOf<MealEntity>()
@@ -80,7 +80,7 @@ class OrderControllerImpl(
 //        val mealsMap = orderMeals.associate { it.id to it.amount }.toMutableMap()
         val mealsMap = mutableMapOf<Int, Int>()
         var totalPrice = 0
-        for (i in orderMeals.indices){
+        for (i in orderMeals.indices) {
             mealsMap[orderMeals[i].id] = orderMealsAmount[i]
             totalPrice += orderMeals[i].price * orderMealsAmount[i]
         }
@@ -97,6 +97,7 @@ class OrderControllerImpl(
     }
 
     override fun getOrder(id: Int): OutputModel {
+        updateState(id)
         return state.getOrder(id)
     }
 
@@ -113,6 +114,7 @@ class OrderControllerImpl(
     }
 
     override fun addMeal(id: Int, mealId: Int, amount: Int): OutputModel {
+        updateState(id)
         return state.addMeal(id, mealId, amount)
     }
 
@@ -141,6 +143,7 @@ class OrderControllerImpl(
     }
 
     override fun removeMeal(id: Int, mealId: Int, amount: Int): OutputModel {
+        updateState(id)
         return state.removeMeal(id, mealId, amount)
     }
 
@@ -173,10 +176,12 @@ class OrderControllerImpl(
     }
 
     override fun getDuration(id: Int): OutputModel {
+        updateState(id)
         return state.getDuration(id)
     }
 
     override fun removeOrder(id: Int): OutputModel {
+        updateState(id)
         return state.removeOrder(id)
     }
 
@@ -190,6 +195,7 @@ class OrderControllerImpl(
     }
 
     override fun isPaid(id: Int): Boolean {
+        updateState(id)
         return state.isPaid(id)
     }
 
@@ -198,6 +204,7 @@ class OrderControllerImpl(
         if (order.userId != Session.currentUserId) {
             return Error(OutputModel("You can not pay for another user order"))
         }
+        updateState(id)
         return state.pay(id)
     }
 
@@ -206,6 +213,7 @@ class OrderControllerImpl(
         if (order.userId != Session.currentUserId) {
             return OutputModel("You can not start cooking another user order")
         }
+        updateState(id)
         return state.startCooking(id)
     }
 
@@ -214,14 +222,17 @@ class OrderControllerImpl(
         if (order.userId != Session.currentUserId) {
             return OutputModel("You can not stop cooking another user order")
         }
+        updateState(id)
         return state.stopCooking(id)
     }
 
     override fun isReady(id: Int): Boolean {
+        updateState(id)
         return state.isReady(id)
     }
 
     override fun isCooking(id: Int): Boolean {
+        updateState(id)
         return state.isCooking(id)
     }
 
@@ -230,8 +241,17 @@ class OrderControllerImpl(
         return OutputModel(orders).takeIf { it.message.isNotEmpty() } ?: OutputModel("List of orders is empty")
     }
 
-    override fun changeState(state: State) {
+    override fun changeState(id: Int, state: State) {
         this.state = state
+        val orderState = when (state) {
+            is CreatedState -> OrderState.Created
+            is InProgressState -> OrderState.InProgress
+            is ReadyState -> OrderState.Ready
+            is PaidState -> OrderState.Paid
+            else -> OrderState.Created
+        }
+        serialize()
+        orderDao.update(orderDao.get(id)!!.copy(state = orderState))
     }
 
     override fun setTimeStart(id: Int, time: LocalDateTime?) {
@@ -243,16 +263,21 @@ class OrderControllerImpl(
 
     override fun prepare(id: Int) {
         val order = orderDao.get(id)!!
+        var flag = false
         for (meal in order.meals) {
             val res = mealController.decreaseAmount(meal.key, meal.value)
-            if (res is Error){
+            if (res is Error) {
                 order.meals.remove(meal.key)
+                flag = true
             }
+        }
+        if (flag) {
+            updateOrder(id)
         }
         val obj = this
         val job = CoroutineScope(Dispatchers.Default).launch {
             sleep(order.duration.inWholeMilliseconds)
-            changeState(ReadyState(obj))
+            changeState(id, ReadyState(obj))
         }
         Jobs.addJob(id, job)
     }
@@ -278,8 +303,27 @@ class OrderControllerImpl(
             Error(OutputModel("Unpredicted problem with orders file"))
         }
     }
-    fun updateOrder(id: Int){
 
+    private fun updateOrder(id: Int) {
+        val order = orderDao.get(id)!!
+        var totalPrice = 0
+        var duration: Duration = 0.toDuration(DurationUnit.MINUTES)
+        for (meal in order.meals) {
+            val mealEntity = mealDao.get(meal.key)!!
+            totalPrice += mealEntity.price * meal.value
+            duration += mealEntity.duration
+        }
+        val newOrder = order.copy(totalPrice = totalPrice, duration = duration)
+        orderDao.update(newOrder)
+    }
+    private fun updateState(id: Int){
+        val order = orderDao.get(id)?: return
+        state = when (order.state) {
+            OrderState.Created -> CreatedState(this)
+            OrderState.InProgress -> InProgressState(this)
+            OrderState.Ready -> ReadyState(this)
+            OrderState.Paid -> PaidState(this)
+        }
     }
     private fun serialize(): OutputModel {
         return try {

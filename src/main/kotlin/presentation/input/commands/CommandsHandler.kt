@@ -26,7 +26,7 @@ class CommandsHandlerImpl(
         }
         val mealId = input[0].toIntOrNull() ?: return OutputModel("Incorrect mealId format")
         val rating = input[1].toIntOrNull() ?: return OutputModel("Incorrect rating format")
-        return feedbackController.addFeedback(Session.currentUserId, mealId, rating, input[2])
+        return feedbackController.addFeedback(mealId, Session.currentUserId, rating, input[2])
     }
 
     override fun getAllFeedback(): OutputModel {
@@ -253,7 +253,13 @@ class CommandsHandlerImpl(
     }
 
     override fun stopCooking(): OutputModel {
-        TODO("Not yet implemented")
+        println(OutputModel("Enter orderId").message)
+        val id = readln().toIntOrNull() ?: return OutputModel("Incorrect orderId format")
+        return orderController.stopCooking(id)
+    }
+
+    override fun getUserOrders(): OutputModel {
+        return orderController.getOrdersByUserId(Session.currentUserId)
     }
 
     override fun getAllOrders(): OutputModel {

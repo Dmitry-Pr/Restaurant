@@ -1,12 +1,15 @@
 package domain.feedback
 
+import data.Session
 import data.feedback.FeedbackDao
 import data.feedback.FeedbackEntity
 import data.meal.MealDao
+import data.order.OrderDao
 import presentation.model.OutputModel
 import domain.Result
 import domain.Error
 import domain.Success
+import domain.order.OrderController
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -29,9 +32,13 @@ interface FeedbackController {
 class FeedbackControllerImpl(
     private val feedbackDao: FeedbackDao,
     private val mealDao: MealDao,
+    private val orderDao: OrderDao,
     private val feedbackValidator: FeedbackValidator
 ) : FeedbackController {
     override fun addFeedback(mealId: Int, userId: Int, rating: Int, comment: String): OutputModel {
+        if (orderDao.get(Session.currentOrderId)?.meals?.contains(mealId) == false) {
+            return OutputModel("You can't leave feedback for the meal that is not in your order")
+        }
         mealDao.get(mealId) ?: return OutputModel("Meal with id $mealId is not found")
         return when (val validateRating = feedbackValidator.validateRating(rating)) {
             is Error -> validateRating.outputModel

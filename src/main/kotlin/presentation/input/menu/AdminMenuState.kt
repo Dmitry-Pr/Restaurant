@@ -12,6 +12,7 @@ class AdminMenuState(
             |"orders" To go to orders menu
             |"feedback" To go to feedback menu
             |"statistics" To go to statistics menu
+            |"log out" In order to log out
             |"exit" In order to finish program
         """.trimMargin()
         return OutputModel(res)

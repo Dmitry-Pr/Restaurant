@@ -1,5 +1,6 @@
 package domain.order
 
+import data.Session
 import domain.Error
 import domain.Result
 import domain.Success
@@ -42,7 +43,8 @@ class ReadyState(
     }
 
     override fun pay(id: Int): Result {
-        orderController.changeState(PaidState(orderController))
+        orderController.changeState(id, PaidState(orderController))
+        Session.currentOrderId = id
         return Success(OutputModel("The order with id $id is paid"))
     }
 

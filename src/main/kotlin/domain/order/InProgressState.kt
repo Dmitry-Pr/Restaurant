@@ -43,8 +43,8 @@ class InProgressState(
             OutputModel(
                 "Time left: ${
                     it.duration - java.time.Duration.between(
-                        java.time.LocalDateTime.now(),
-                        it.startedOn!!.toJavaLocalDateTime()
+                        it.startedOn!!.toJavaLocalDateTime(),
+                        java.time.LocalDateTime.now()
                     ).toKotlinDuration()
                 }"
             )
@@ -71,7 +71,7 @@ class InProgressState(
         val order = orderController.getOrderById(id) ?: return OutputModel("Order with id $id does not exist")
         orderController.setTimeStart(id, null)
         orderController.stopJob(id)
-        orderController.changeState(CreatedState(orderController))
+        orderController.changeState(id, CreatedState(orderController))
         return OutputModel("The order with id $id is not being prepared anymore")
     }
 

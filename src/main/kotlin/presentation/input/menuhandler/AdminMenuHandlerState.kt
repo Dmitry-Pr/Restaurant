@@ -15,6 +15,7 @@ class AdminMenuHandlerState(
             "orders" -> menuHandler.current = Sections.Orders
             "feedback" -> menuHandler.current = Sections.Feedback
             "statistics" -> menuHandler.current = Sections.Statistics
+            "log out" -> menuHandler.current = Sections.Registration
             "exit" -> menuHandler.finish = true
             else -> {
                 println(OutputModel("Incorrect command").message)

@@ -82,6 +82,7 @@ object DI {
         get() = FeedbackControllerImpl(
             feedbackDao = feedbackDao,
             mealDao = mealDao,
+            orderDao = orderDao,
             feedbackValidator = feedbackValidator
         )
     private val commandsHandler: CommandsHandler

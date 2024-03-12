@@ -15,6 +15,7 @@ class UserMenuHandlerState(
             "meals" -> menuHandler.current = Sections.Meals
             "orders" -> menuHandler.current = Sections.Orders
             "statistics" -> menuHandler.current = Sections.Statistics
+            "log out" -> menuHandler.current = Sections.Registration
             "exit" -> menuHandler.finish = true
             else -> {
                 println(OutputModel("Incorrect command").message)
@@ -43,7 +44,7 @@ class UserMenuHandlerState(
         println(menuHandler.getMenu().showOrdersMenu().message)
         val input = readln()
         val res = when (input) {
-            "show all" -> menuHandler.getCommandsHandler().getAllOrders()
+            "show all" -> menuHandler.getCommandsHandler().getUserOrders()
             "make" -> menuHandler.getCommandsHandler().addOrder()
             "add" -> menuHandler.getCommandsHandler().addMealToOrder()
             "remove" -> menuHandler.getCommandsHandler().removeMealFromOrder()

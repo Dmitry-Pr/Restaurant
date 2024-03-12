@@ -18,12 +18,12 @@ class InProgressState(
                 "Order id: ${it.id}\n" +
                         "Meals: ${it.meals}\n" +
                         "Total price: ${it.totalPrice}\n" +
-                        "State: ${it.state}" +
+                        "State: ${it.state}\n" +
                         "StartCookingTime: ${it.startedOn}\n" +
                         "TimeLeft: ${
                             it.duration - java.time.Duration.between(
-                                java.time.LocalDateTime.now(),
-                                it.startedOn!!.toJavaLocalDateTime()
+                                it.startedOn!!.toJavaLocalDateTime(),
+                                java.time.LocalDateTime.now()
                             ).toKotlinDuration()
                         }"
             )

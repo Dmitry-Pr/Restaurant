@@ -264,12 +264,10 @@ class OrderControllerImpl(
     override fun prepare(id: Int) {
         val order = orderDao.get(id)!!
         var flag = false
-        for (meal in order.meals) {
-            val res = mealController.decreaseAmount(meal.key, meal.value)
-            if (res is Error) {
-                order.meals.remove(meal.key)
-                flag = true
-            }
+        val incorrectMeals = order.meals.filter { mealController.decreaseAmount(it.key, it.value) is Error }
+        for (meal in incorrectMeals) {
+            order.meals.remove(meal.key)
+            flag = true
         }
         if (flag) {
             updateOrder(id)

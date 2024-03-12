@@ -1,1 +1,1 @@
-[{"id":0,"mealId":1,"userId":1,"rating":4,"comment":"good"},{"id":1,"mealId":1,"userId":1,"rating":5,"comment":"tasty"},{"id":2,"mealId":1,"userId":2,"rating":4,"comment":"nice"}]
+[{"id":0,"mealId":1,"userId":1,"rating":4,"comment":"good"},{"id":1,"mealId":1,"userId":1,"rating":5,"comment":"tasty"},{"id":2,"mealId":1,"userId":2,"rating":4,"comment":"nice"},{"id":3,"mealId":0,"userId":1,"rating":1,"comment":"not good"}]

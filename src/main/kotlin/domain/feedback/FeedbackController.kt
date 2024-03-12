@@ -65,14 +65,21 @@ class FeedbackControllerImpl(
     }
 
     override fun getAllFeedbackByRating(): OutputModel {
-        val feedback = feedbackDao.getAll().groupBy { it.rating }.map { it.key to it.value.size }.joinToString("\n")
-        return OutputModel(feedback).takeIf { it.message.isNotEmpty() } ?: OutputModel("No feedback found")
+        val feedback = feedbackDao.getAll().groupBy { it.rating }
+        var res = ""
+        for (i in 5 downTo 1) {
+            for (j in feedback[i] ?: emptyList()) {
+                res += "${i} stars: ${j}\n"
+            }
+        }
+        return OutputModel(res).takeIf { it.message.isNotEmpty() } ?: OutputModel("No feedback found")
     }
 
     override fun getMeanRatingByMealId(mealId: Int): OutputModel {
         val feedback = feedbackDao.getAll().filter { it.mealId == mealId }
+        if (feedback.isEmpty()) return OutputModel("No feedback found")
         val meanRating = feedback.map { it.rating }.average()
-        return OutputModel(meanRating.toString()).takeIf { it.message.isNotEmpty() } ?: OutputModel("No feedback found")
+        return OutputModel(meanRating.toString())
     }
 
     override fun deserialize(): Result {

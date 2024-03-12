@@ -1,5 +1,7 @@
 package domain.order
 
+import domain.Error
+import domain.Result
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
 import presentation.model.OutputModel
@@ -57,8 +59,8 @@ class InProgressState(
         return false
     }
 
-    override fun pay(id: Int): OutputModel {
-        return OutputModel("You can't pay for the order that is being prepared, wait until it's ready")
+    override fun pay(id: Int): Result {
+        return Error(OutputModel("You can't pay for the order that is being prepared, wait until it's ready"))
     }
 
     override fun startCooking(id: Int): OutputModel {

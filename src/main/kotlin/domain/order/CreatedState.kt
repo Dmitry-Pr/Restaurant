@@ -2,6 +2,8 @@ package domain.order
 
 import kotlinx.datetime.toKotlinLocalDateTime
 import presentation.model.OutputModel
+import domain.Result
+import domain.Error
 
 class CreatedState(
     orderController: OrderController
@@ -41,8 +43,8 @@ class CreatedState(
         return false
     }
 
-    override fun pay(id: Int): OutputModel {
-        return OutputModel("The order with id $id is not prepared yet, you can ask to start cooking")
+    override fun pay(id: Int): Result {
+        return Error(OutputModel("The order with id $id is not prepared yet, you can ask to start cooking"))
     }
 
     override fun startCooking(id: Int): OutputModel {

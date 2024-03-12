@@ -1,4 +1,4 @@
-package data
+package data.meal
 
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration

@@ -1,7 +1,7 @@
 package domain.meal
 
-import data.MealDao
-import data.MealEntity
+import data.meal.MealDao
+import data.meal.MealEntity
 import domain.Result
 import domain.Error
 import domain.Success

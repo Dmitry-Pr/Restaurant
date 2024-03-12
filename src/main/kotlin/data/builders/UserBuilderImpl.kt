@@ -1,8 +1,7 @@
 package data.builders
 
-import data.Role
-import data.UserEntity
-import data.builders.UserBuilder
+import data.user.Role
+import data.user.UserEntity
 
 class UserBuilderImpl : UserBuilder {
     var id: Int = 0

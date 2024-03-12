@@ -2,7 +2,7 @@ package domain.user
 
 import domain.Result
 import domain.Error
-import data.UserDao
+import data.user.UserDao
 import org.mindrot.jbcrypt.BCrypt
 import presentation.model.OutputModel
 

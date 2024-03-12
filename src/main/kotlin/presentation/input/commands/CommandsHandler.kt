@@ -1,6 +1,6 @@
 package presentation.input.commands
 
-import data.Role
+import data.user.Role
 import data.Session
 import domain.Result
 import domain.Success
@@ -44,6 +44,10 @@ class CommandsHandlerImpl(
         println(OutputModel("Enter userId").message)
         val id = readln().toIntOrNull() ?: return OutputModel("Incorrect userId format")
         return feedbackController.getFeedbackByUserId(id)
+    }
+
+    override fun getFeedbackByCurrentUser(): OutputModel {
+        return feedbackController.getFeedbackByUserId(session.currentUserId)
     }
 
     override fun getAllFeedbackByRating(): OutputModel {
@@ -237,9 +241,9 @@ class CommandsHandlerImpl(
         return orderController.getDuration(id)
     }
 
-    override fun payForOrder(): OutputModel {
+    override fun payForOrder(): Result {
         println(OutputModel("Enter orderId").message)
-        val id = readln().toIntOrNull() ?: return OutputModel("Incorrect orderId format")
+        val id = readln().toIntOrNull() ?: return Error(OutputModel("Incorrect orderId format"))
         return orderController.pay(id)
     }
 

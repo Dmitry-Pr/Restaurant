@@ -1,17 +1,14 @@
 package domain.feedback
 
-import data.FeedbackDao
-import data.FeedbackEntity
-import data.MealDao
-import data.MealEntity
+import data.feedback.FeedbackDao
+import data.feedback.FeedbackEntity
+import data.meal.MealDao
 import presentation.model.OutputModel
 import domain.Result
 import domain.Error
 import domain.Success
-import domain.meal.MEALS_JSON_PATH
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.serializer
 import java.io.File
 import java.io.FileNotFoundException
 import java.lang.Exception

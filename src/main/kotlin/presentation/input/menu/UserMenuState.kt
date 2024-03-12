@@ -10,6 +10,7 @@ class UserMenuState(
             """Main menu. Enter
             |"meals" To go to meals menu
             |"orders" To go to orders menu
+            |"statistics" To go to statistics menu
             |"exit" In order to finish program
         """.trimMargin()
         return OutputModel(res)

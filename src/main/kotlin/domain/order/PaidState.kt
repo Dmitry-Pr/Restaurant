@@ -1,5 +1,7 @@
 package domain.order
 
+import domain.Error
+import domain.Result
 import presentation.model.OutputModel
 
 class PaidState(
@@ -37,8 +39,8 @@ class PaidState(
         return true
     }
 
-    override fun pay(id: Int): OutputModel {
-        return OutputModel("The order with id $id is already paid")
+    override fun pay(id: Int): Result {
+        return Error(OutputModel("The order with id $id is already paid"))
     }
 
     override fun startCooking(id: Int): OutputModel {

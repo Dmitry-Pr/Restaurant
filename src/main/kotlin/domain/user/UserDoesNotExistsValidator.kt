@@ -1,6 +1,6 @@
 package domain.user
 
-import data.UserDao
+import data.user.UserDao
 import domain.Error
 import domain.Result
 import presentation.model.OutputModel

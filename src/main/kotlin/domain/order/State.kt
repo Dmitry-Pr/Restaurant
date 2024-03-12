@@ -1,5 +1,6 @@
 package domain.order
 
+import domain.Result
 import presentation.model.OutputModel
 
 abstract class State(
@@ -11,7 +12,7 @@ abstract class State(
     abstract fun getDuration(id: Int): OutputModel
     abstract fun removeOrder(id: Int): OutputModel
     abstract fun isPaid(id: Int): Boolean
-    abstract fun pay(id: Int): OutputModel
+    abstract fun pay(id: Int): Result
     abstract fun startCooking(id: Int): OutputModel
     abstract fun stopCooking(id: Int): OutputModel
     abstract fun isReady(id: Int): Boolean

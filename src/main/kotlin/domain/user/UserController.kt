@@ -1,9 +1,9 @@
 package domain.user
 
-import data.Role
+import data.user.Role
 import data.Session
-import data.UserDao
-import data.UserEntity
+import data.user.UserDao
+import data.user.UserEntity
 import domain.Error
 import domain.Result
 import domain.Success

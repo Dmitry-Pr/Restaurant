@@ -1,4 +1,4 @@
-package data
+package data.order
 
 import kotlinx.datetime.LocalDateTime
 import kotlin.time.Duration

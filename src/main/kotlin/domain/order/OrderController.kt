@@ -1,6 +1,11 @@
 package domain.order
 
 import data.*
+import data.meal.MealDao
+import data.meal.MealEntity
+import data.order.OrderDao
+import data.order.OrderEntity
+import data.order.OrderState
 import domain.Error
 import domain.Result
 import domain.Success
@@ -35,7 +40,7 @@ interface OrderController {
     fun removeOrder(id: Int): OutputModel
     fun removeOrderById(id: Int): OutputModel
     fun isPaid(id: Int): Boolean
-    fun pay(id: Int): OutputModel
+    fun pay(id: Int): Result
     fun startCooking(id: Int): OutputModel
     fun stopCooking(id: Int): OutputModel
     fun isReady(id: Int): Boolean
@@ -179,10 +184,10 @@ class OrderControllerImpl(
         return state.isPaid(id)
     }
 
-    override fun pay(id: Int): OutputModel {
-        val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
+    override fun pay(id: Int): Result {
+        val order = orderDao.get(id) ?: return Error(OutputModel("Order with id $id does not exist"))
         if (order.userId != session.currentUserId) {
-            return OutputModel("You can not pay for another user order")
+            return Error(OutputModel("You can not pay for another user order"))
         }
         return state.pay(id)
     }

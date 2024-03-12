@@ -1,4 +1,4 @@
-package data
+package data.order
 
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.LocalDateTime

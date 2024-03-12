@@ -1,5 +1,8 @@
 package domain.order
 
+import domain.Error
+import domain.Result
+import domain.Success
 import presentation.model.OutputModel
 
 class ReadyState(
@@ -38,9 +41,9 @@ class ReadyState(
         return false
     }
 
-    override fun pay(id: Int): OutputModel {
+    override fun pay(id: Int): Result {
         orderController.changeState(PaidState(orderController))
-        return OutputModel("The order with id $id is paid")
+        return Success(OutputModel("The order with id $id is paid"))
     }
 
     override fun startCooking(id: Int): OutputModel {

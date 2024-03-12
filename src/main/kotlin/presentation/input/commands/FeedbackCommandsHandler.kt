@@ -7,6 +7,7 @@ interface FeedbackCommandsHandler {
     fun getAllFeedback(): OutputModel
     fun getFeedbackByMeal(): OutputModel
     fun getFeedbackByUser(): OutputModel
+    fun getFeedbackByCurrentUser(): OutputModel
     fun getAllFeedbackByRating(): OutputModel
     fun getMeanRatingByMeal(): OutputModel
 }

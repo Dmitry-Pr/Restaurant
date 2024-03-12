@@ -1,5 +1,6 @@
 package presentation.input.commands
 
+import domain.Result
 import presentation.model.OutputModel
 
 interface OrderCommandsHandler {
@@ -10,7 +11,7 @@ interface OrderCommandsHandler {
     fun addMealToOrder(): OutputModel
     fun removeMealFromOrder(): OutputModel
     fun getOrderDuration(): OutputModel
-    fun payForOrder(): OutputModel
+    fun payForOrder(): Result
     fun startCooking(): OutputModel
     fun stopCooking(): OutputModel
     fun getAllOrders(): OutputModel

@@ -1,4 +1,4 @@
-package data
+package data.meal
 
 import kotlin.time.Duration
 

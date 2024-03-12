@@ -57,8 +57,6 @@ class OrderControllerImpl(
     private val orderDao: OrderDao,
     private val mealDao: MealDao,
     private val mealController: MealController,
-    private val session: Session
-
 ) : OrderController {
     private var state: State = CreatedState(this)
 
@@ -94,7 +92,7 @@ class OrderControllerImpl(
     override fun getOrderById(id: Int): OrderEntity? {
         return when (orderDao.get(id)) {
             null -> null
-            else -> if (orderDao.get(id)!!.userId != session.currentUserId) null else orderDao.get(id)
+            else -> if (orderDao.get(id)!!.userId != Session.currentUserId) null else orderDao.get(id)
         }
     }
 
@@ -109,7 +107,7 @@ class OrderControllerImpl(
 
     override fun addMealById(id: Int, mealId: Int, amount: Int): OutputModel {
         val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
-        if (order.userId != session.currentUserId) {
+        if (order.userId != Session.currentUserId) {
             return OutputModel("You can not add meal to another user order")
         }
         val meal = mealDao.get(mealId) ?: return OutputModel("Meal with id $mealId does not exist")
@@ -137,7 +135,7 @@ class OrderControllerImpl(
 
     override fun removeMealById(id: Int, mealId: Int, amount: Int): OutputModel {
         val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
-        if (order.userId != session.currentUserId) {
+        if (order.userId != Session.currentUserId) {
             return OutputModel("You can not remove meal from another user order")
         }
         val meal = mealDao.get(mealId) ?: return OutputModel("Meal with id $mealId does not exist")
@@ -173,7 +171,7 @@ class OrderControllerImpl(
 
     override fun removeOrderById(id: Int): OutputModel {
         val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
-        if (order.userId != session.currentUserId) {
+        if (order.userId != Session.currentUserId) {
             return OutputModel("You can not remove another user order")
         }
         orderDao.remove(id)
@@ -186,7 +184,7 @@ class OrderControllerImpl(
 
     override fun pay(id: Int): Result {
         val order = orderDao.get(id) ?: return Error(OutputModel("Order with id $id does not exist"))
-        if (order.userId != session.currentUserId) {
+        if (order.userId != Session.currentUserId) {
             return Error(OutputModel("You can not pay for another user order"))
         }
         return state.pay(id)
@@ -194,7 +192,7 @@ class OrderControllerImpl(
 
     override fun startCooking(id: Int): OutputModel {
         val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
-        if (order.userId != session.currentUserId) {
+        if (order.userId != Session.currentUserId) {
             return OutputModel("You can not start cooking another user order")
         }
         return state.startCooking(id)
@@ -202,7 +200,7 @@ class OrderControllerImpl(
 
     override fun stopCooking(id: Int): OutputModel {
         val order = orderDao.get(id) ?: return OutputModel("Order with id $id does not exist")
-        if (order.userId != session.currentUserId) {
+        if (order.userId != Session.currentUserId) {
             return OutputModel("You can not stop cooking another user order")
         }
         return state.stopCooking(id)

@@ -4,38 +4,38 @@ import data.user.Role
 import data.user.UserEntity
 
 class UserBuilderImpl : UserBuilder {
-    var id: Int = 0
-    var name: String = ""
-    var surname: String = ""
-    var login: String = ""
-    var password: String = ""
-    var role: Role = Role.User
+    var userId: Int = 0
+    var userName: String = ""
+    var userSurname: String = ""
+    var userLogin: String = ""
+    var userPassword: String = ""
+    var userRole: Role = Role.User
     override fun setId(id: Int) {
-        this.id = id
+        this.userId = id
     }
 
     override fun setName(name: String) {
-        this.name = name
+        this.userName = name
     }
 
     override fun setSurname(surname: String) {
-        this.surname = surname
+        this.userSurname = surname
     }
 
     override fun setLogin(login: String) {
-        this.login = login
+        this.userLogin = login
     }
 
     override fun setPassword(password: String) {
-        this.password = password
+        this.userPassword = password
     }
 
     override fun setRole(role: Role) {
-        this.role = role
+        this.userRole = role
     }
 
     override fun getResult(): UserEntity {
-        return UserEntity(id, name, surname, login, password, role)
+        return UserEntity(userId, userName, userSurname, userLogin, userPassword, userRole)
     }
 
 }

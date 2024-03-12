@@ -27,7 +27,6 @@ class UserControllerImpl(
     private val userDao: UserDao,
     private val loginValidator: UserValidator,
     private val registrationValidator: UserValidator,
-    private val session: Session,
 ) : UserController {
     override fun addUser(name: String, surname: String, login: String, password: String, role: Role): Result {
         val checkResult = registrationValidator.check(login, password, name, surname)
@@ -41,8 +40,8 @@ class UserControllerImpl(
                     password = BCrypt.hashpw(password, BCrypt.gensalt()),
                     role = role
                 )
-                session.currentUserId = userDao.get(login)!!.id
-                session.currentUserRole = role
+                Session.currentUserId = userDao.get(login)!!.id
+                Session.currentUserRole = role
                 when (val res = serialize()) {
                     is Success -> Success(OutputModel("Successfully added user"))
                     is Error -> res
@@ -53,12 +52,12 @@ class UserControllerImpl(
     }
 
     override fun loginUser(login: String, password: String): Result {
-        val checkResult = loginValidator.check(login, password, "", "")
+        val checkResult = loginValidator.check(login, password, "NotEmpty", "NotEmpty")
         return when {
             checkResult is Error -> checkResult
             else -> {
-                session.currentUserId = userDao.get(login)!!.id
-                session.currentUserRole = userDao.get(login)!!.role
+                Session.currentUserId = userDao.get(login)!!.id
+                Session.currentUserRole = userDao.get(login)!!.role
                 Success(OutputModel("Successfully logged in"))
             }
         }

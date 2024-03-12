@@ -17,7 +17,6 @@ class CommandsHandlerImpl(
     private val orderController: OrderController,
     private val mealController: MealController,
     private val feedbackController: FeedbackController,
-    private val session: Session,
 ) : CommandsHandler {
     override fun addFeedback(): OutputModel {
         println(OutputModel("Enter the feedback in format: mealId; rating; text").message)
@@ -27,7 +26,7 @@ class CommandsHandlerImpl(
         }
         val mealId = input[0].toIntOrNull() ?: return OutputModel("Incorrect mealId format")
         val rating = input[1].toIntOrNull() ?: return OutputModel("Incorrect rating format")
-        return feedbackController.addFeedback(session.currentUserId, mealId, rating, input[2])
+        return feedbackController.addFeedback(Session.currentUserId, mealId, rating, input[2])
     }
 
     override fun getAllFeedback(): OutputModel {
@@ -47,7 +46,7 @@ class CommandsHandlerImpl(
     }
 
     override fun getFeedbackByCurrentUser(): OutputModel {
-        return feedbackController.getFeedbackByUserId(session.currentUserId)
+        return feedbackController.getFeedbackByUserId(Session.currentUserId)
     }
 
     override fun getAllFeedbackByRating(): OutputModel {
@@ -193,7 +192,7 @@ class CommandsHandlerImpl(
             val amount = mealInfo[1].toIntOrNull() ?: return OutputModel("Incorrect amount format")
             meals[mealId] = amount
         }
-        return orderController.addOrder(session.currentUserId, meals)
+        return orderController.addOrder(Session.currentUserId, meals)
     }
 
     override fun removeOrder(): OutputModel {
@@ -209,7 +208,7 @@ class CommandsHandlerImpl(
     }
 
     override fun getOrderByUser(): OutputModel {
-        return orderController.getOrdersByUserId(session.currentUserId)
+        return orderController.getOrdersByUserId(Session.currentUserId)
     }
     override fun addMealToOrder(): OutputModel {
         println(OutputModel("Enter orderId, mealId and amount in format: orderId; mealId; amount").message)

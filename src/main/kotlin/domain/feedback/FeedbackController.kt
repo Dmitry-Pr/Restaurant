@@ -37,7 +37,7 @@ class FeedbackControllerImpl(
             is Error -> validateRating.outputModel
             else -> {
                 feedbackDao.add(mealId, userId, rating, comment)
-                OutputModel("Feedback added" + serialize().message)
+                OutputModel("Feedback added " + serialize().message)
             }
         }
     }

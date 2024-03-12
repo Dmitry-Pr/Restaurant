@@ -113,7 +113,7 @@ class CommandsHandlerImpl(
     override fun addMeal(): OutputModel {
         println(
             OutputModel(
-                "Enter the meal in format: name; amount; price; duration;. "
+                "Enter the meal in format: name; amount; price; duration. "
                         + "Duration is in format: nnHnnM"
             ).message
         )

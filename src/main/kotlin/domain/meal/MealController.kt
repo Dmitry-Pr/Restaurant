@@ -19,10 +19,11 @@ interface MealController {
     fun changeName(id: Int, name: String): OutputModel
     fun changePrice(id: Int, price: Int): OutputModel
     fun changeAmount(id: Int, amount: Int): OutputModel
-    fun decreaseAmount(id: Int, amount: Int): OutputModel
-    fun increaseAmount(id: Int, amount: Int): OutputModel
+    fun decreaseAmount(id: Int, amount: Int): Result
+    fun increaseAmount(id: Int, amount: Int): Result
     fun changeDuration(id: Int, duration: String): OutputModel
     fun getAllMeals(): OutputModel
+    fun checkEnoughMeal(id:Int, amount: Int): Result
     fun deserialize(): Result
 }
 
@@ -42,7 +43,7 @@ class MealControllerImpl(
             durationValidation is Error -> durationValidation.outputModel
             else -> {
                 mealDao.add(name, amount, price, Duration.parse(duration))
-                OutputModel("Added the meal" + serialize().message)
+                OutputModel("Added the meal " + serialize().message)
             }
         }
     }
@@ -53,7 +54,7 @@ class MealControllerImpl(
             is Success -> {
                 val updatedMeal = meal.copy(name = name)
                 mealDao.update(updatedMeal)
-                OutputModel("Changed name of the meal" + serialize().message)
+                OutputModel("Changed name of the meal " + serialize().message)
             }
 
             is Error -> result.outputModel
@@ -66,7 +67,7 @@ class MealControllerImpl(
             is Success -> {
                 val updatedMeal = meal.copy(price = price)
                 mealDao.update(updatedMeal)
-                OutputModel("Changed price of the meal" + serialize().message)
+                OutputModel("Changed price of the meal " + serialize().message)
             }
 
             is Error -> result.outputModel
@@ -79,28 +80,28 @@ class MealControllerImpl(
             is Success -> {
                 val updatedMeal = meal.copy(amount = amount)
                 mealDao.update(updatedMeal)
-                OutputModel("Changed amount of the meal" + serialize().message)
+                OutputModel("Changed amount of the meal " + serialize().message)
             }
 
             is Error -> result.outputModel
         }
     }
 
-    override fun decreaseAmount(id: Int, amount: Int): OutputModel {
-        val meal = mealDao.get(id) ?: return OutputModel("Incorrect meal id")
+    override fun decreaseAmount(id: Int, amount: Int): Result {
+        val meal = mealDao.get(id) ?: return Error(OutputModel("Incorrect meal id"))
         val newAmount = meal.amount - amount
         return when (val result = mealValidator.validateAmount(newAmount)) {
             is Success -> {
                 val updatedMeal = meal.copy(amount = newAmount)
                 mealDao.update(updatedMeal)
-                OutputModel("Changed amount of the meal" + serialize().message)
+                Success(OutputModel("Changed amount of the meal " + serialize().message))
             }
 
-            is Error -> result.outputModel
+            is Error -> result
         }
     }
 
-    override fun increaseAmount(id: Int, amount: Int): OutputModel {
+    override fun increaseAmount(id: Int, amount: Int): Result {
         return decreaseAmount(id, -amount)
     }
 
@@ -110,7 +111,7 @@ class MealControllerImpl(
             is Success -> {
                 val updatedMeal = meal.copy(duration = Duration.parse(duration))
                 mealDao.update(updatedMeal)
-                OutputModel("Changed duration of the meal" + serialize().message)
+                OutputModel("Changed duration of the meal " + serialize().message)
             }
 
             is Error -> result.outputModel
@@ -120,6 +121,15 @@ class MealControllerImpl(
     override fun getAllMeals(): OutputModel {
         val meals = mealDao.getAll().joinToString("\n")
         return OutputModel(meals).takeIf { it.message.isNotEmpty() } ?: OutputModel("List of meals is empty")
+    }
+
+    override fun checkEnoughMeal(id: Int, amount: Int): Result {
+        val meal = mealDao.get(id) ?: return Error(OutputModel("Incorrect meal id"))
+        val newAmount = meal.amount - amount
+        return when (val result = mealValidator.validateAmount(newAmount)) {
+            is Success -> Success(OutputModel(""))
+            is Error -> Error(OutputModel("Not enough meal in storage"))
+        }
     }
 
     override fun deserialize(): Result {

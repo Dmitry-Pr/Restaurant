@@ -63,26 +63,37 @@ class OrderControllerImpl(
     override fun addOrder(userId: Int, meals: MutableMap<Int, Int>): OutputModel {
         var answer = ""
         val orderMeals = mutableListOf<MealEntity>()
+        val orderMealsAmount = mutableListOf<Int>()
         for (meal in meals) {
             if (mealDao.get(meal.key) == null) {
                 answer += "Meal with id ${meal.key} does not exist\n"
+            } else if (mealController.checkEnoughMeal(meal.key, meal.value) is Error) {
+                answer += "Not enough meal with id ${meal.key} in storage\n"
             } else {
                 orderMeals.add(mealDao.get(meal.key)!!)
+                orderMealsAmount.add(meal.value)
             }
         }
         if (orderMeals.isEmpty()) {
             return OutputModel("$answer\nCan not create order without meals")
         }
-        val mealsMap = orderMeals.associate { it.id to it.amount }.toMutableMap()
+//        val mealsMap = orderMeals.associate { it.id to it.amount }.toMutableMap()
+        val mealsMap = mutableMapOf<Int, Int>()
+        var totalPrice = 0
+        for (i in orderMeals.indices){
+            mealsMap[orderMeals[i].id] = orderMealsAmount[i]
+            totalPrice += orderMeals[i].price * orderMealsAmount[i]
+        }
+
         orderDao.add(
             userId = userId,
             duration = orderMeals.sumOf { it.duration.inWholeMinutes }.toDuration(DurationUnit.MINUTES),
             meals = mealsMap,
-            totalPrice = orderMeals.sumOf { it.price },
+            totalPrice = totalPrice,
             state = OrderState.Created,
             startedOn = null
         )
-        return OutputModel("Order created" + serialize().message)
+        return OutputModel("Order created " + serialize().message)
     }
 
     override fun getOrder(id: Int): OutputModel {
@@ -126,7 +137,7 @@ class OrderControllerImpl(
             duration = order.duration + meal.duration
         )
         orderDao.update(newOrder)
-        return OutputModel("Meal added to the order" + serialize().message)
+        return OutputModel("Meal added to the order " + serialize().message)
     }
 
     override fun removeMeal(id: Int, mealId: Int, amount: Int): OutputModel {
@@ -158,7 +169,7 @@ class OrderControllerImpl(
             duration = order.duration - meal.duration
         )
         orderDao.update(newOrder)
-        return OutputModel("Meal removed from the order" + serialize().message)
+        return OutputModel("Meal removed from the order " + serialize().message)
     }
 
     override fun getDuration(id: Int): OutputModel {
@@ -175,7 +186,7 @@ class OrderControllerImpl(
             return OutputModel("You can not remove another user order")
         }
         orderDao.remove(id)
-        return OutputModel("Order removed" + serialize().message)
+        return OutputModel("Order removed " + serialize().message)
     }
 
     override fun isPaid(id: Int): Boolean {
@@ -232,8 +243,11 @@ class OrderControllerImpl(
 
     override fun prepare(id: Int) {
         val order = orderDao.get(id)!!
-        for(meal in order.meals) {
-            mealController.decreaseAmount(meal.key, meal.value)
+        for (meal in order.meals) {
+            val res = mealController.decreaseAmount(meal.key, meal.value)
+            if (res is Error){
+                order.meals.remove(meal.key)
+            }
         }
         val obj = this
         val job = CoroutineScope(Dispatchers.Default).launch {
@@ -246,7 +260,7 @@ class OrderControllerImpl(
     override fun stopJob(id: Int) {
         Jobs.stopJob(id)
         val order = orderDao.get(id)!!
-        for(meal in order.meals) {
+        for (meal in order.meals) {
             mealController.increaseAmount(meal.key, meal.value)
         }
     }
@@ -264,7 +278,9 @@ class OrderControllerImpl(
             Error(OutputModel("Unpredicted problem with orders file"))
         }
     }
+    fun updateOrder(id: Int){
 
+    }
     private fun serialize(): OutputModel {
         return try {
             val file = File(ORDERS_JSON_PATH)

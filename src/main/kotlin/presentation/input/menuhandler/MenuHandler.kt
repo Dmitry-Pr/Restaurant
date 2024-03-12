@@ -1,9 +1,13 @@
 package presentation.input.menuhandler
 
+import data.Session
+import data.user.Role
 import domain.Error
 import domain.Success
 import presentation.input.commands.CommandsHandler
+import presentation.input.menu.AdminMenuState
 import presentation.input.menu.Menu
+import presentation.input.menu.UserMenuState
 import presentation.model.OutputModel
 
 enum class Sections {
@@ -26,7 +30,7 @@ class MenuHandlerImpl(
     override var finish = false
     override var current = Sections.Registration
     private val commands = mutableMapOf<Sections, () -> Unit>()
-    private val menuHandlerState: MenuHandlerState = UserMenuHandlerState(this)
+    private var menuHandlerState: MenuHandlerState = UserMenuHandlerState(this)
 
     init {
         commands[Sections.Registration] = ::registrationCommand
@@ -62,14 +66,42 @@ class MenuHandlerImpl(
         when (input) {
             "log in" -> {
                 when (val res = commandsHandler.logIn()) {
-                    is Success -> current = Sections.Main
+                    is Success -> {
+                        menuHandlerState = when (Session.currentUserRole) {
+                            Role.Admin -> {
+                                menu.changeState(AdminMenuState(menu))
+                                AdminMenuHandlerState(this)
+                            }
+
+                            Role.User -> {
+                                menu.changeState(UserMenuState(menu))
+                                UserMenuHandlerState(this)
+                            }
+                        }
+                        current = Sections.Main
+                    }
+
                     is Error -> println(res.outputModel.message)
                 }
             }
 
             "sign up" -> {
                 when (val res = commandsHandler.signUp()) {
-                    is Success -> current = Sections.Main
+                    is Success -> {
+                        current = Sections.Main
+                        menuHandlerState = when (Session.currentUserRole) {
+                            Role.Admin -> {
+                                menu.changeState(AdminMenuState(menu))
+                                AdminMenuHandlerState(this)
+                            }
+
+                            Role.User -> {
+                                menu.changeState(UserMenuState(menu))
+                                UserMenuHandlerState(this)
+                            }
+                        }
+                    }
+
                     is Error -> println(res.outputModel.message)
                 }
             }
@@ -80,15 +112,19 @@ class MenuHandlerImpl(
             }
         }
     }
+
     private fun mealsCommand() {
         menuHandlerState.mealsCommand()
     }
+
     private fun ordersCommand() {
         menuHandlerState.ordersCommand()
     }
+
     private fun statisticsCommand() {
         menuHandlerState.statisticsCommand()
     }
+
     private fun feedbackCommand() {
         menuHandlerState.feedbackCommand()
     }
